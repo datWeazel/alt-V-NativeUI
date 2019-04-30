@@ -1,8 +1,9 @@
 # alt:V-NativeUI
-This project is a port of [RageMP-NativeUI by XMGamingMaster](https://github.com/XMGamingMaster/RageMP-NativeUI) for alt:V. alt:V-NativeUI provides a simple module to use NativeUI menus in your clientside scripts.
+This project is a port of [RageMP-NativeUI by XMGamingMaster](https://github.com/XMGamingMaster/RageMP-NativeUI) for alt:V. It provides a simple way to use NativeUI menus in your clientside scripts.
 # Usage
-Simply copy the `NativeUIMenu`folder into your resource folder and add it to your `resource.cfg`. After that you can need to import`NativeUI`to your clientside script by adding this line to your script: 
+Simply copy the`NativeUIMenu`folder into your resource folder and add it to your`resource.cfg`. After that you need to import`NativeUI`to your clientside script by adding this line: 
 `import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';`
+
 ## Example
     import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';
     
