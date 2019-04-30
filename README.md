@@ -4,8 +4,7 @@ This project is a port of [RageMP-NativeUI by XMGamingMaster](https://github.com
 Simply copy the `NativeUIMenu`folder into your resource folder and add it to your `resource.cfg`. After that you can need to import`NativeUI`to your clientside script by adding this line to your script: 
 `import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';`
 ## Example
-    ```javascript
-	import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';
+    import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';
     
     const ui = new NativeUI.Menu("NativeUI Test", "Test Subtitle", new NativeUI.Point(50, 50));
     ui.AddItem(new NativeUI.UIMenuListItem(
@@ -34,23 +33,23 @@ Simply copy the `NativeUIMenu`folder into your resource folder and add it to you
     	} else {
     		alt.log(item.Text);
     	}
-    });```
+    });
 **Result:**
-![Result](https://i.imgur.com/44tebiJ.png)
+![enter image description here](https://i.imgur.com/StrdDxR.png)
 ## Functions
 `new NativeUI.Menu(Title, Subtitle, Offset, spriteLibrary = "commonmenu", spriteName = "interaction_bgd")`
 -   **Functions**
--   `AddItem(NativeUI.UIMenuItem)`
--   `BindMenuToItem(NativeUI.Menu, NativeUI.UIMenuItem)`
--   `ReleaseMenuFromItem(NativeUI.UIMenuItem)`
+-   `AddItem(UIMenuItem)`
+-   `BindMenuToItem(NativeUI, UIMenuItem)`
+-   `ReleaseMenuFromItem(UIMenuItem)`
 -   `Open()`
 -   `Close()`
 -   **Events**
 -   `IndexChange: (Index)`
--   `ListChange: (NativeUI.UIMenuListItem, Index)`
--   `CheckboxChange: (NativeUI.UIMenuCheckboxItem, Checked)`
--   `ItemSelect: (NativeUI.UIMenuItem, Index)`
--   `SliderChange: (NativeUI.UIMenuSliderItem, Index, Value)`
+-   `ListChange: (UIMenuListItem, Index)`
+-   `CheckboxChange: (UIMenuCheckboxItem, Checked)`
+-   `ItemSelect: (UIMenuItem, Index)`
+-   `SliderChange: (UIMenuSliderItem, Index, Value)`
 -   `MenuClose: ()`
 -   `MenuChange: (Menu)`
 ----------
@@ -68,21 +67,21 @@ Simply copy the `NativeUIMenu`folder into your resource folder and add it to you
 -   `ForeColor: Color`
 -   `HighlightedForeColor: Color`
 ----------
-`new NativeUI.UIMenuListItem(Caption, Description = "", collection = new ItemsCollection([]), startIndex = 0)`  (Extends  `NativeUI.UIMenuItem`)  
+`new NativeUI.UIMenuListItem(Caption, Description = "", collection = new ItemsCollection([]), startIndex = 0)`  (Extends  `UIMenuItem`)  
 **Does not support  `SetRightBadge`  and  `SetRightLabel`**
 -   **Variables**
 -   `Collection: ItemsCollection`
 -   `SelectedItem: string`
 -   `SelectedValue: string`
 ----------
-`new NativeUI.UIMenuCheckboxItem(Caption, checked = false, Description = "")`  (Extends  `NativeUI.UIMenuItem`)  
+`new NativeUI.UIMenuCheckboxItem(Caption, checked = false, Description = "")`  (Extends  `UIMenuItem`)  
 **Does not support  `SetRightBadge`  and  `SetRightLabel`**
 -   **Variables**
 -   `Checked: boolean`
 -   **Events**
 -   `CheckedChanged: (Checked)`
 ----------
-`new NativeUI.UIMenuSliderItem(Caption, Items, Startindex, Description = "", Divider = false)`  (Extends  `NativeUI.UIMenuItem`)  
+`new NativeUI.UIMenuSliderItem(Caption, Items, Startindex, Description = "", Divider = false)`  (Extends  `UIMenuItem`)  
 **Does not support  `SetRightBadge`  and  `SetRightLabel`**
 -   **Variables**
 -   `Index: number`
