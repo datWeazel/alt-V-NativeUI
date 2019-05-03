@@ -23,16 +23,13 @@ export default class Text extends IElement {
         }
         const x = pos.X / 1280.0;
         const y = pos.Y / 720.0;
-		//alt.nextTick(() => {
-			//alt.log("Drawing Text (" + this.caption + " | " + caption + ")");
-            game.setTextFont(parseInt(font));
-            game.setTextScale(scale, scale);
-            game.setTextColour(color.R, color.G, color.B, color.A);
-            game.setTextCentre(centered);
-            game.beginTextCommandDisplayText("STRING");
-            Text.AddLongString(caption);
-            game.endTextCommandDisplayText(x, y);
-        //});
+		game.setTextFont(parseInt(font));
+		game.setTextScale(scale, scale);
+		game.setTextColour(color.R, color.G, color.B, color.A);
+		game.setTextCentre(centered);
+		game.beginTextCommandDisplayText("STRING");
+		Text.AddLongString(caption);
+		game.endTextCommandDisplayText(x, y);
     }
     static AddLongString(str) {
         const strLen = 99;

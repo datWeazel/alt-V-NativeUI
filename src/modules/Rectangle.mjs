@@ -1,4 +1,4 @@
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
+wimport Point from "includes/NativeUIMenu/utils/Point.mjs";
 import Size from "includes/NativeUIMenu/utils/Size.mjs";
 import IElement from "includes/NativeUIMenu/modules/IElement.mjs";
 import alt from 'alt';
@@ -23,9 +23,6 @@ export default class Rectangle extends IElement {
         const h = size.Height / 720.0;
         const x = pos.X / 1280.0 + w * 0.5;
         const y = pos.Y / 720.0 + h * 0.5;
-		//alt.nextTick(() => {
-			//alt.log("Drawing Rectangle.");
-            game.drawRect(x, y, w, h, color.R, color.G, color.B, color.A);
-        //});
+		game.drawRect(x, y, w, h, color.R, color.G, color.B, color.A);
     }
 }

@@ -26,9 +26,6 @@ export default class ResRectangle extends Rectangle {
         const h = size.Height / height;
         const x = pos.X / width + w * 0.5;
 		const y = pos.Y / height + h * 0.5;
-		//alt.nextTick(() => {
-			//alt.log("Drawing Rectangle.");
-			game.drawRect(x, y, w, h, color.R, color.G, color.B, color.A);
-		//});
+		game.drawRect(x, y, w, h, color.R, color.G, color.B, color.A);
     }
 }
