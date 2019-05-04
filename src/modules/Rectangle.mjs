@@ -1,4 +1,4 @@
-wimport Point from "includes/NativeUIMenu/utils/Point.mjs";
+import Point from "includes/NativeUIMenu/utils/Point.mjs";
 import Size from "includes/NativeUIMenu/utils/Size.mjs";
 import IElement from "includes/NativeUIMenu/modules/IElement.mjs";
 import alt from 'alt';
