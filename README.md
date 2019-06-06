@@ -1,10 +1,21 @@
 # alt:V-NativeUI
 This project is a port of [RageMP-NativeUI by XMGamingMaster](https://github.com/XMGamingMaster/RageMP-NativeUI) for alt:V. It provides a simple way to use NativeUI menus in your clientside scripts.
-# Usage
-Simply copy the contents of the `src`folder into your resource folder and add it to your`resource.cfg`. After that you need to import`NativeUI`to your clientside script by adding this line: 
-`import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';`
 
-## Example
+__NativeUI is not a standalone resource!  
+You need to include NativeUI in every resource in which you want to use NativeUI menus!__
+# Usage
+1. Create a folder called `includes` inside the resource folder in which you want to use NativeUI. 
+2. Add the new `includes` folder to client-files in the `resource.cfg`. 
+	1. Use `includes/*` to automatically add all subfolders and files inside `includes` to your resource
+3. Create another folder called `NativeUIMenu` inside the `includes` folder.
+4. Download NativeUI from github and extract all files inside the `src` folder to your `NativeUIMenu` folder
+	1. Your file structure should look something like this:  
+	`altv-Server/resources/yourResource/includes/NativeUIMenu/NativeUI.mjs`
+5. Finally just include NativeUI inside the clientside script where you want to use NativeUI with this line:  
+`import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';`
+  
+You can download an example resource here: https://neo-v.de/altv/files/nativeUI-example.zip
+## Example Menu
 ```javascript
 import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';
 
