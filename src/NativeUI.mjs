@@ -255,7 +255,7 @@ export default class NativeUI {
     getMousePosition(relative = false) {
         const screenw = Screen.width;
         const screenh = Screen.height;
-        const cursor = alt.getCursorPos;
+        const cursor = alt.getCursorPos();
         let [mouseX, mouseY] = [cursor.x, cursor.y];
         if (relative)
             [mouseX, mouseY] = [cursor.x / screenw, cursor.y / screenh];
