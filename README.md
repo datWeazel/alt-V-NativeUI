@@ -14,7 +14,7 @@ You need to include NativeUI in every resource in which you want to use NativeUI
 5. Finally just include NativeUI inside the clientside script where you want to use NativeUI with this line:  
 `import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';`
   
-You can download an example resource here: https://neo-v.de/altv/files/nativeUI-example.zip
+You can download an example resource here: https://neo-v.de/altv/files/nativeUI-example.zip (Last updated: 18.06.2019)
 ## Example Menu
 ```javascript
 import * as NativeUI from 'includes/NativeUIMenu/NativeUI.mjs';
