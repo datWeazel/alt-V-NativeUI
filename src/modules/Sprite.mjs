@@ -12,14 +12,20 @@ export default class Sprite {
         this.color = color;
         this.visible = true;
     }
-    LoadTextureDictionary() {
-        alt.nextTick(() => {
-            game.requestStreamedTextureDict(this._textureDict, true);
-            while (!this.IsTextureDictionaryLoaded) {
-                alt.wait(0);
-            }
-        });
+    LoadTextureDictionary() {       
+        this.requestTextureDictPromise(this._textureDict).then((succ) => { });
     }
+    requestTextureDictPromise(textureDict) {
+        return new Promise((resolve, reject) => {    
+            game.requestStreamedTextureDict(textureDict, true);
+            let inter = alt.setInterval(() => {
+                if (game.hasStreamedTextureDictLoaded(textureDict)) {
+                    alt.clearInterval(inter);
+                    return resolve(true);
+                }
+            }, 10);
+        });
+    }    
     set TextureDict(v) {
         this._textureDict = v;
         if (!this.IsTextureDictionaryLoaded)
@@ -39,9 +45,6 @@ export default class Sprite {
         heading = heading || this.heading;
         color = color || this.color;
 		loadTexture = loadTexture || true;
-		//alt.nextTick(() => {
-
-			//alt.log("Drawing Sprite (" + textureDictionary + " | " + textureName + ")");
 			if (loadTexture) {
 				if (!game.hasStreamedTextureDictLoaded(textureDictionary))
 					game.requestStreamedTextureDict(textureDictionary, true);
@@ -56,6 +59,5 @@ export default class Sprite {
 			const x = this.pos.X / width + w * 0.5;
 			const y = this.pos.Y / height + h * 0.5;
 			game.drawSprite(textureDictionary, textureName, x, y, w, h, heading, color.R, color.G, color.B, color.A);
-		//});
     }
 }
