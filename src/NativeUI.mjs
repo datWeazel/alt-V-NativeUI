@@ -23,8 +23,8 @@ import UIMenuCheckboxItem from "includes/NativeUIMenu/items/UIMenuCheckboxItem.m
 import UIMenuListItem from "includes/NativeUIMenu/items/UIMenuListItem.mjs";
 import UIMenuSliderItem from "includes/NativeUIMenu/items/UIMenuSliderItem.mjs";
 
-import alt from 'alt';
-import game from 'natives';
+import * as alt from 'alt';
+import * as game from 'natives';
 
 export default class NativeUI {
 	constructor(title, subtitle, offset, spriteLibrary, spriteName) {

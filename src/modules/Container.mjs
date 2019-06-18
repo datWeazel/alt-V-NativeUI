@@ -2,8 +2,8 @@ import Size from "includes/NativeUIMenu/utils/Size.mjs";
 import Rectangle from "includes/NativeUIMenu/modules/Rectangle.mjs";
 import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
 
-import alt from 'alt';
-import game from 'natives';
+import * as alt from 'alt';
+import * as game from 'natives';
 export default class Container extends Rectangle {
     constructor(pos, size, color) {
         super(pos, size, color);

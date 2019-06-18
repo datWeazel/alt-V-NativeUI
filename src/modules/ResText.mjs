@@ -3,8 +3,8 @@ import Point from "includes/NativeUIMenu/utils/Point.mjs";
 import Size from "includes/NativeUIMenu/utils/Size.mjs";
 import Text from "includes/NativeUIMenu/modules/Text.mjs";
 import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
-import alt from 'alt';
-import game from 'natives';
+import * as alt from 'alt';
+import * as game from 'natives';
 export var Alignment;
 (function (Alignment) {
     Alignment[Alignment["Left"] = 0] = "Left";

@@ -1,8 +1,8 @@
 import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
 import ResText from "includes/NativeUIMenu/modules/ResText.mjs";
 
-import alt from 'alt';
-import game from 'natives';
+import * as alt from 'alt';
+import * as game from 'natives';
 export default class StringMeasurer {
 	static MeasureStringWidthNoConvert(input) {
 		game.beginTextCommandWidth("STRING");

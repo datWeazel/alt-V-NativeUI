@@ -1,7 +1,7 @@
 import Color from "includes/NativeUIMenu/utils/Color.mjs";
 import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
-import alt from 'alt';
-import game from 'natives';
+import * as alt from 'alt';
+import * as game from 'natives';
 export default class Sprite {
    constructor(textureDict, textureName, pos, size, heading = 0, color = new Color(255, 255, 255)) {
         this.TextureDict = textureDict;
