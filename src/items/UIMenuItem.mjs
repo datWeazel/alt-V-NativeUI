@@ -1,12 +1,12 @@
-import BadgeStyle from "includes/NativeUIMenu/enums/BadgeStyle.mjs";
-import Font from "includes/NativeUIMenu/enums/Font.mjs";
-import ResRectangle from "includes/NativeUIMenu/modules/ResRectangle.mjs";
-import ResText, { Alignment } from "includes/NativeUIMenu/modules/ResText.mjs";
-import Sprite from "includes/NativeUIMenu/modules/Sprite.mjs";
-import Color from "includes/NativeUIMenu/utils/Color.mjs";
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
-import Size from "includes/NativeUIMenu/utils/Size.mjs";
-import UUIDV4 from "includes/NativeUIMenu/utils/UUIDV4.mjs";
+import BadgeStyle from "../enums/BadgeStyle.mjs";
+import Font from "../enums/Font.mjs";
+import ResRectangle from "../modules/ResRectangle.mjs";
+import ResText, { Alignment } from "../modules/ResText.mjs";
+import Sprite from "../modules/Sprite.mjs";
+import Color from "../utils/Color.mjs";
+import Point from "../utils/Point.mjs";
+import Size from "../utils/Size.mjs";
+import UUIDV4 from "../utils/UUIDV4.mjs";
 export default class UIMenuItem {
     constructor(text, description = "") {
         this.Id = UUIDV4();

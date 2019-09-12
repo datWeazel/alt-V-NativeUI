@@ -1,14 +1,14 @@
-import Font from "includes/NativeUIMenu/enums/Font.mjs";
-import ItemsCollection from "includes/NativeUIMenu/modules/ItemsCollection.mjs";
-import ListItem from "includes/NativeUIMenu/modules/ListItem.mjs";
-import ResText, { Alignment } from "includes/NativeUIMenu/modules/ResText.mjs";
-import Sprite from "includes/NativeUIMenu/modules/Sprite.mjs";
-import Color from "includes/NativeUIMenu/utils/Color.mjs";
-import LiteEvent from "includes/NativeUIMenu/utils/LiteEvent.mjs";
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
-import Size from "includes/NativeUIMenu/utils/Size.mjs";
-import StringMeasurer from "includes/NativeUIMenu/modules/StringMeasurer.mjs";
-import UIMenuItem from "includes/NativeUIMenu/items/UIMenuItem.mjs";
+import Font from "../enums/Font.mjs";
+import ItemsCollection from "../modules/ItemsCollection.mjs";
+import ListItem from "../modules/ListItem.mjs";
+import ResText, { Alignment } from "../modules/ResText.mjs";
+import Sprite from "../modules/Sprite.mjs";
+import Color from "../utils/Color.mjs";
+import LiteEvent from "../utils/LiteEvent.mjs";
+import Point from "../utils/Point.mjs";
+import Size from "../utils/Size.mjs";
+import StringMeasurer from "../modules/StringMeasurer.mjs";
+import UIMenuItem from "./UIMenuItem.mjs";
 export default class UIMenuListItem extends UIMenuItem {
     constructor(text, description = "", collection = new ItemsCollection([]), startIndex = 0) {
         super(text, description);

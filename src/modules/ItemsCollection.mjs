@@ -1,4 +1,4 @@
-import ListItem from "includes/NativeUIMenu/modules/ListItem.mjs";
+import ListItem from "./ListItem.mjs";
 export default class ItemsCollection {
     constructor(items) {
         if (items.length === 0)

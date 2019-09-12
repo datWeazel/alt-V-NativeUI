@@ -1,7 +1,7 @@
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
-import Size from "includes/NativeUIMenu/utils/Size.mjs";
-import Rectangle from "includes/NativeUIMenu/modules/Rectangle.mjs";
-import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
+import Point from "../utils/Point.mjs";
+import Size from "../utils/Size.mjs";
+import Rectangle from "./Rectangle.mjs";
+import { Screen } from "../utils/Screen.mjs";
 
 import * as alt from 'alt';
 import * as game from 'natives';

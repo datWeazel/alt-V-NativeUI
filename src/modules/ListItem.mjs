@@ -1,4 +1,4 @@
-import UUIDV4 from "includes/NativeUIMenu/utils/UUIDV4.mjs";
+import UUIDV4 from "../utils/UUIDV4.mjs";
 export default class ListItem {
     constructor(text = "", data = null) {
         this.Id = UUIDV4();

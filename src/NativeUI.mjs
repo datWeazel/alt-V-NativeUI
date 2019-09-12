@@ -1,27 +1,27 @@
-import BadgeStyle from "includes/NativeUIMenu/enums/BadgeStyle.mjs";
-import Font from "includes/NativeUIMenu/enums/Font.mjs";
+import BadgeStyle from "./enums/BadgeStyle.mjs";
+import Font from "./enums/Font.mjs";
 
-import Container from "includes/NativeUIMenu/modules/Container.mjs";
-import ItemsCollection from "includes/NativeUIMenu/modules/ItemsCollection.mjs";
-import ResRectangle from "includes/NativeUIMenu/modules/ResRectangle.mjs";
-import ResText, { Alignment } from "includes/NativeUIMenu/modules/ResText.mjs";
-import Sprite from "includes/NativeUIMenu/modules/Sprite.mjs";
+import Container from "./modules/Container.mjs";
+import ItemsCollection from "./modules/ItemsCollection.mjs";
+import ResRectangle from "./modules/ResRectangle.mjs";
+import ResText, { Alignment } from "./modules/ResText.mjs";
+import Sprite from "./modules/Sprite.mjs";
 
-import ListItem from "includes/NativeUIMenu/modules/ListItem.mjs";
+import ListItem from "./modules/ListItem.mjs";
 
-import Color from "includes/NativeUIMenu/utils/Color.mjs";
-import Common from "includes/NativeUIMenu/utils/Common.mjs";
-import LiteEvent from "includes/NativeUIMenu/utils/LiteEvent.mjs";
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
-import Size from "includes/NativeUIMenu/utils/Size.mjs";
-import StringMeasurer from "includes/NativeUIMenu/modules/StringMeasurer.mjs";
-import UUIDV4 from "includes/NativeUIMenu/utils/UUIDV4.mjs";
-import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
+import Color from "./utils/Color.mjs";
+import Common from "./utils/Common.mjs";
+import LiteEvent from "./utils/LiteEvent.mjs";
+import Point from "./utils/Point.mjs";
+import Size from "./utils/Size.mjs";
+import StringMeasurer from "./modules/StringMeasurer.mjs";
+import UUIDV4 from "./utils/UUIDV4.mjs";
+import { Screen } from "./utils/Screen.mjs";
 
-import UIMenuItem from "includes/NativeUIMenu/items/UIMenuItem.mjs";
-import UIMenuCheckboxItem from "includes/NativeUIMenu/items/UIMenuCheckboxItem.mjs";
-import UIMenuListItem from "includes/NativeUIMenu/items/UIMenuListItem.mjs";
-import UIMenuSliderItem from "includes/NativeUIMenu/items/UIMenuSliderItem.mjs";
+import UIMenuItem from "./items/UIMenuItem.mjs";
+import UIMenuCheckboxItem from "./items/UIMenuCheckboxItem.mjs";
+import UIMenuListItem from "./items/UIMenuListItem.mjs";
+import UIMenuSliderItem from "./items/UIMenuSliderItem.mjs";
 
 import * as alt from 'alt';
 import * as game from 'natives';

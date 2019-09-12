@@ -1,6 +1,6 @@
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
-import Size from "includes/NativeUIMenu/utils/Size.mjs";
-import IElement from "includes/NativeUIMenu/modules/IElement.mjs";
+import Point from "../utils/Point.mjs";
+import Size from "../utils/Size.mjs";
+import IElement from "./IElement.mjs";
 import * as alt from 'alt';
 import * as game from 'natives';
 export default class Rectangle extends IElement {

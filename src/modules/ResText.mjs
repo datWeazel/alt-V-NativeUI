@@ -1,8 +1,8 @@
-import Color from "includes/NativeUIMenu/utils/Color.mjs";
-import Point from "includes/NativeUIMenu/utils/Point.mjs";
-import Size from "includes/NativeUIMenu/utils/Size.mjs";
-import Text from "includes/NativeUIMenu/modules/Text.mjs";
-import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
+import Color from "../utils/Color.mjs";
+import Point from "../utils/Point.mjs";
+import Size from "../utils/Size.mjs";
+import Text from "./Text.mjs";
+import { Screen } from "../utils/Screen.mjs";
 import * as alt from 'alt';
 import * as game from 'natives';
 export var Alignment;

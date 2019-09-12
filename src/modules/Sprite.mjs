@@ -1,5 +1,5 @@
-import Color from "includes/NativeUIMenu/utils/Color.mjs";
-import { Screen } from "includes/NativeUIMenu/utils/Screen.mjs";
+import Color from "../utils/Color.mjs";
+import { Screen } from "../utils/Screen.mjs";
 import * as alt from 'alt';
 import * as game from 'natives';
 export default class Sprite {
