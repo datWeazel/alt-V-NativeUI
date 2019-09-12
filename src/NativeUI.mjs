@@ -100,7 +100,7 @@ export default class NativeUI {
         this._descriptionRectangle = new Sprite("commonmenu", "gradient_bgd", new Point(this.offset.X, 127), new Size(431, 30));
         this._descriptionText = new ResText("Description", new Point(this.offset.X + 5, 125), 0.35, new Color(255, 255, 255, 255), Font.ChaletLondon, Alignment.Left, true);
         this._background = new Sprite("commonmenu", "gradient_bgd", new Point(this.offset.X, 144 + this.offset.Y - 37 + this.extraOffset), new Size(290, 25));
-		alt.on("update", this.render.bind(this));
+		alt.everyTick(this.render.bind(this));
         alt.log("Created Native UI Menu! (" + this.title + ")");
     }
     get CurrentSelection() {
