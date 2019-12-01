@@ -1,10 +1,8 @@
+import game from 'natives';
 import Point from "../utils/Point.mjs";
 import Size from "../utils/Size.mjs";
 import Rectangle from "./Rectangle.mjs";
 import { Screen } from "../utils/Screen.mjs";
-
-import * as alt from 'alt';
-import * as game from 'natives';
 export default class ResRectangle extends Rectangle {
     constructor(pos, size, color) {
         super(pos, size, color);
@@ -25,7 +23,7 @@ export default class ResRectangle extends Rectangle {
         const w = size.Width / width;
         const h = size.Height / height;
         const x = pos.X / width + w * 0.5;
-		const y = pos.Y / height + h * 0.5;
-		game.drawRect(x, y, w, h, color.R, color.G, color.B, color.A);
+        const y = pos.Y / height + h * 0.5;
+        game.drawRect(x, y, w, h, color.R, color.G, color.B, color.A, false);
     }
 }

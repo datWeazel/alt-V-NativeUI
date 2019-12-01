@@ -5,14 +5,8 @@ import Point from "../utils/Point.mjs";
 import Size from "../utils/Size.mjs";
 import UIMenuItem from "./UIMenuItem.mjs";
 export default class UIMenuSliderItem extends UIMenuItem {
-    get Index() {
-        return this._index % this._items.length;
-    }
-    set Index(value) {
-        this._index = 100000000 - (100000000 % this._items.length) + value;
-    }
-    constructor(text, items, index, description = "", divider = false) {
-        super(text, description);
+    constructor(text, items, index, description = "", divider = false, data = null) {
+        super(text, description, data);
         const y = 0;
         this._items = items;
         this._arrowLeft = new Sprite("commonmenutu", "arrowleft", new Point(0, 105 + y), new Size(15, 15));
@@ -26,6 +20,12 @@ export default class UIMenuSliderItem extends UIMenuItem {
             this._rectangleDivider = new ResRectangle(new Point(0, 0), new Size(2.5, 20), Color.Transparent);
         }
         this.Index = index;
+    }
+    get Index() {
+        return this._index % this._items.length;
+    }
+    set Index(value) {
+        this._index = 100000000 - (100000000 % this._items.length) + value;
     }
     SetVerticalPosition(y) {
         this._rectangleBackground.pos = new Point(250 + this.Offset.X + this.Parent.WidthOffset, y + 158.5 + this.Offset.Y);
@@ -58,6 +58,8 @@ export default class UIMenuSliderItem extends UIMenuItem {
         if (this.Selected) {
             this._arrowLeft.Draw();
             this._arrowRight.Draw();
+        }
+        else {
         }
         this._rectangleBackground.Draw();
         this._rectangleSlider.Draw();

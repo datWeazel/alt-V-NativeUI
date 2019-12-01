@@ -8,9 +8,11 @@ export default class Point {
     static Parse(arg) {
         if (typeof arg === "object") {
             if (arg.length) {
+                // Array
                 return new Point(arg[0], arg[1]);
             }
             else if (arg.X && arg.Y) {
+                // Object
                 return new Point(arg.X, arg.Y);
             }
         }

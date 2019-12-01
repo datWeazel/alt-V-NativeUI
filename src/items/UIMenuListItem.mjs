@@ -1,22 +1,21 @@
+import Alignment from "../enums/Alignment.mjs";
 import Font from "../enums/Font.mjs";
 import ItemsCollection from "../modules/ItemsCollection.mjs";
 import ListItem from "../modules/ListItem.mjs";
-import ResText, { Alignment } from "../modules/ResText.mjs";
+import ResText from "../modules/ResText.mjs";
 import Sprite from "../modules/Sprite.mjs";
 import Color from "../utils/Color.mjs";
-import LiteEvent from "../utils/LiteEvent.mjs";
 import Point from "../utils/Point.mjs";
+import { Screen } from "../utils/Screen.mjs";
 import Size from "../utils/Size.mjs";
-import StringMeasurer from "../modules/StringMeasurer.mjs";
 import UIMenuItem from "./UIMenuItem.mjs";
 export default class UIMenuListItem extends UIMenuItem {
-    constructor(text, description = "", collection = new ItemsCollection([]), startIndex = 0) {
-        super(text, description);
-        this.currOffset = 0;
-        this.collection = [];
+    constructor(text, description = "", collection = new ItemsCollection([]), startIndex = 0, data = null) {
+        super(text, description, data);
         this.ScrollingEnabled = true;
         this.HoldTimeBeforeScroll = 200;
-        this.OnListChanged = new LiteEvent();
+        this.currOffset = 0;
+        this.collection = [];
         this._index = 0;
         let y = 0;
         this.Collection = collection.getListItems();
@@ -50,9 +49,6 @@ export default class UIMenuListItem extends UIMenuItem {
                 ? this.SelectedItem.DisplayText
                 : this.SelectedItem.Data;
     }
-    get ListChanged() {
-        return this.OnListChanged.expose();
-    }
     get Index() {
         if (this.Collection == null)
             return -1;
@@ -65,22 +61,25 @@ export default class UIMenuListItem extends UIMenuItem {
             return;
         if (this.Collection != null && this.Collection.length == 0)
             return;
-        this._index = 100000 - (100000 % this.Collection.length) + value;
+        this._index = 100000000 - (100000000 % this.Collection.length) + value;
         const caption = this.Collection.length >= this.Index
             ? this.Collection[this.Index].DisplayText
             : " ";
-        this.currOffset = StringMeasurer.MeasureString(caption);
+        this.currOffset = Screen.GetTextWidth(caption, this._itemText && this._itemText.font ? this._itemText.font : 0, 0.35); // this._itemText && this._itemText.font ? this._itemText.font : 0, this._itemText && this._itemText.scale ? this._itemText.scale : 0.35
     }
     setCollection(collection) {
         this.Collection = collection.getListItems();
     }
     setCollectionItem(index, item, resetSelection = true) {
         if (index > this.Collection.length)
+            // Placeholder for formatting
             throw new Error("Index out of bounds");
         if (typeof item === "string")
+            // Placeholder for formatting
             item = new ListItem(item);
         this.Collection.splice(index, 1, item);
         if (resetSelection)
+            // Placeholder for formatting
             this.Index = 0;
     }
     SetVerticalPosition(y) {
@@ -117,7 +116,8 @@ export default class UIMenuListItem extends UIMenuItem {
                 ? this.HighlightedForeColor
                 : this.ForeColor
             : new Color(163, 159, 148);
-        this._arrowLeft.pos = new Point(375 - offset + this.Offset.X + this.Parent.WidthOffset, this._arrowLeft.pos.Y);
+        this._arrowLeft.pos = new Point(390 - offset + this.Offset.X + this.Parent.WidthOffset, // 375
+        this._arrowLeft.pos.Y);
         if (this.Selected) {
             this._arrowLeft.Draw();
             this._arrowRight.Draw();

@@ -1,10 +1,11 @@
+import Alignment from "./enums/Alignment.mjs";
 import BadgeStyle from "./enums/BadgeStyle.mjs";
 import Font from "./enums/Font.mjs";
 
 import Container from "./modules/Container.mjs";
 import ItemsCollection from "./modules/ItemsCollection.mjs";
 import ResRectangle from "./modules/ResRectangle.mjs";
-import ResText, { Alignment } from "./modules/ResText.mjs";
+import ResText from "./modules/ResText.mjs";
 import Sprite from "./modules/Sprite.mjs";
 
 import ListItem from "./modules/ListItem.mjs";
@@ -14,46 +15,55 @@ import Common from "./utils/Common.mjs";
 import LiteEvent from "./utils/LiteEvent.mjs";
 import Point from "./utils/Point.mjs";
 import Size from "./utils/Size.mjs";
-import StringMeasurer from "./modules/StringMeasurer.mjs";
 import UUIDV4 from "./utils/UUIDV4.mjs";
 import { Screen } from "./utils/Screen.mjs";
 
 import UIMenuItem from "./items/UIMenuItem.mjs";
 import UIMenuCheckboxItem from "./items/UIMenuCheckboxItem.mjs";
+import UIMenuDynamicListItem from "./items/UIMenuDynamicListItem.mjs";
 import UIMenuListItem from "./items/UIMenuListItem.mjs";
 import UIMenuSliderItem from "./items/UIMenuSliderItem.mjs";
 
 import * as alt from 'alt';
 import * as game from 'natives';
 
+let menuPool = [];
 export default class NativeUI {
-	constructor(title, subtitle, offset, spriteLibrary, spriteName) {
+    constructor(title, subtitle, offset, spriteLibrary, spriteName) {
         this.Id = UUIDV4();
+        this._visible = true;
         this.counterPretext = "";
         this.counterOverride = undefined;
         this.lastUpDownNavigation = 0;
         this.lastLeftRightNavigation = 0;
-        this._activeItem = 1000;
         this.extraOffset = 0;
+        this.ParentMenu = null;
+        this.ParentItem = null;
+        this._titleScale = 1.15;
         this.WidthOffset = 0;
-        this.Visible = true;
         this.MouseControlsEnabled = false;
         this._justOpened = true;
+        this._justOpenedFromPool = false;
+        this._justClosedFromPool = false;
+        this._poolOpening = null;
         this.safezoneOffset = new Point(0, 0);
+        this._activeItem = 1000;
         this.MaxItemsOnScreen = 9;
         this._maxItem = this.MaxItemsOnScreen;
+        this.recalculateDescriptionNextFrame = 1;
         this.AUDIO_LIBRARY = "HUD_FRONTEND_DEFAULT_SOUNDSET";
         this.AUDIO_UPDOWN = "NAV_UP_DOWN";
         this.AUDIO_LEFTRIGHT = "NAV_LEFT_RIGHT";
         this.AUDIO_SELECT = "SELECT";
         this.AUDIO_BACK = "BACK";
         this.AUDIO_ERROR = "ERROR";
-        this.gui_cursor_visible = false;
         this.MenuItems = [];
+        // Events
         this.IndexChange = new LiteEvent();
         this.ListChange = new LiteEvent();
+        this.DynamicListChange = new LiteEvent();
         this.SliderChange = new LiteEvent();
-        this.SliderSelect = new LiteEvent();
+        //public readonly SliderSelect = new LiteEvent();
         this.CheckboxChange = new LiteEvent();
         this.ItemSelect = new LiteEvent();
         this.MenuOpen = new LiteEvent();
@@ -68,9 +78,10 @@ export default class NativeUI {
         this.spriteName = spriteName || "interaction_bgd";
         this.offset = new Point(offset.X, offset.Y);
         this.Children = new Map();
+        // Create everything
         this._mainMenu = new Container(new Point(0, 0), new Size(700, 500), new Color(0, 0, 0, 0));
         this._logo = new Sprite(this.spriteLibrary, this.spriteName, new Point(0 + this.offset.X, 0 + this.offset.Y), new Size(431, 107));
-        this._mainMenu.addItem((this._title = new ResText(this.title, new Point(215 + this.offset.X, 20 + this.offset.Y), 1.15, new Color(255, 255, 255), 1, Alignment.Centered)));
+        this._mainMenu.addItem((this._title = new ResText(this.title, new Point(215 + this.offset.X, 20 + this.offset.Y), this._titleScale, new Color(255, 255, 255), 1, Alignment.Centered)));
         if (this.subtitle !== "") {
             this._mainMenu.addItem(new ResRectangle(new Point(0 + this.offset.X, 107 + this.offset.Y), new Size(431, 37), new Color(0, 0, 0, 255)));
             this._mainMenu.addItem((this._subtitle = new ResText(this.subtitle, new Point(8 + this.offset.X, 110 + this.offset.Y), 0.35, new Color(255, 255, 255), 0, Alignment.Left)));
@@ -98,10 +109,74 @@ export default class NativeUI {
             this.extraOffset), new Size(431, 18), new Color(0, 0, 0, 200));
         this._descriptionBar = new ResRectangle(new Point(this.offset.X, 123), new Size(431, 4), Color.Black);
         this._descriptionRectangle = new Sprite("commonmenu", "gradient_bgd", new Point(this.offset.X, 127), new Size(431, 30));
-        this._descriptionText = new ResText("Description", new Point(this.offset.X + 5, 125), 0.35, new Color(255, 255, 255, 255), Font.ChaletLondon, Alignment.Left, true);
+        this._descriptionText = new ResText("", new Point(this.offset.X + 5, 125), 0.35, new Color(255, 255, 255, 255), Font.ChaletLondon, Alignment.Left);
         this._background = new Sprite("commonmenu", "gradient_bgd", new Point(this.offset.X, 144 + this.offset.Y - 37 + this.extraOffset), new Size(290, 25));
-		alt.everyTick(this.render.bind(this));
-        alt.log("Created Native UI Menu! (" + this.title + ")");
+        this._visible = false;
+        alt.everyTick(this.render.bind(this));
+        //alt.log(`Created Native UI! ${this.title}`);
+    }
+    get TitleScale() {
+        return this._titleScale;
+    }
+    set TitleScale(scale) {
+        this._titleScale = scale;
+    }
+    get Visible() {
+        return this._visible;
+    }
+    set Visible(toggle) {
+        this._visible = toggle;
+        Common.PlaySound(this.AUDIO_BACK, this.AUDIO_LIBRARY);
+        /*if(!toggle) {
+            alt.emit('server:clientDebug', `Visible = false. _justOpenedFromPool: ${this._justOpenedFromPool}`);
+        }*/
+        if (toggle) {
+            this.UpdateDescriptionCaption();
+        }
+        if (this._justOpenedFromPool === true) {
+            this._justOpenedFromPool = false;
+            return;
+        }
+        if (toggle) {
+            this._justOpened = true;
+            this.MenuOpen.emit();
+            if (this.ParentMenu === null) {
+                if (!menuPool.includes(this) && this !== this._poolOpening) {
+                    const previousMenu = (menuPool.length) ? menuPool[menuPool.length - 1] : null;
+                    menuPool.push(this);
+                    //alt.emit('server:clientDebug', 'Adding to menu pool ' + menuPool.length);
+                    if (previousMenu !== this._poolOpening && previousMenu !== null) {
+                        previousMenu._justClosedFromPool = true;
+                        previousMenu.Visible = false;
+                        //alt.emit('server:clientDebug', 'Closing current');
+                    }
+                }
+            }
+        }
+        else {
+            if (this._justClosedFromPool === true) {
+                this._justClosedFromPool = false;
+                return;
+            }
+            if (this.ParentMenu === null && menuPool.includes(this) && menuPool.length) {
+                if (menuPool[menuPool.length - 1] === this) {
+                    menuPool.pop();
+                    this._justOpenedFromPool = true;
+                    if (!menuPool.length) {
+                        this._poolOpening = null;
+                    }
+                    //alt.emit('server:clientDebug', 'Removing from menu pool ' + menuPool.length);
+                }
+                if (menuPool.length) {
+                    this._poolOpening = menuPool[menuPool.length - 1];
+                    menuPool[menuPool.length - 1].Visible = true;
+                    //alt.emit('server:clientDebug', 'Pool opening next in line menu');
+                }
+            }
+            if (menuPool.length === 0) {
+                game.setMouseCursorSprite(1);
+            }
+        }
     }
     get CurrentSelection() {
         return this._activeItem % this.MenuItems.length;
@@ -117,16 +192,15 @@ export default class NativeUI {
             this._maxItem = this.MaxItemsOnScreen + this.CurrentSelection;
             this._minItem = this.CurrentSelection;
         }
+        this.UpdateDescriptionCaption();
     }
     RecalculateDescriptionPosition() {
+        const count = (this.MenuItems.length > this.MaxItemsOnScreen + 1) ? this.MaxItemsOnScreen + 2 : this.MenuItems.length;
+        this._descriptionBar.size = new Size(431 + this.WidthOffset, 4);
+        this._descriptionRectangle.size = new Size(431 + this.WidthOffset, 30);
         this._descriptionBar.pos = new Point(this.offset.X, 149 - 37 + this.extraOffset + this.offset.Y);
         this._descriptionRectangle.pos = new Point(this.offset.X, 149 - 37 + this.extraOffset + this.offset.Y);
         this._descriptionText.pos = new Point(this.offset.X + 8, 155 - 37 + this.extraOffset + this.offset.Y);
-        this._descriptionBar.size = new Size(431 + this.WidthOffset, 4);
-        this._descriptionRectangle.size = new Size(431 + this.WidthOffset, 30);
-        let count = this.MenuItems.length;
-        if (count > this.MaxItemsOnScreen + 1)
-            count = this.MaxItemsOnScreen + 2;
         this._descriptionBar.pos = new Point(this.offset.X, 38 * count + this._descriptionBar.pos.Y);
         this._descriptionRectangle.pos = new Point(this.offset.X, 38 * count + this._descriptionRectangle.pos.Y);
         this._descriptionText.pos = new Point(this.offset.X + 8, 38 * count + this._descriptionText.pos.Y);
@@ -152,9 +226,15 @@ export default class NativeUI {
         item.Parent = this;
         item.SetVerticalPosition(this.MenuItems.length * 25 - 37 + this.extraOffset);
         this.MenuItems.push(item);
-        item.Description = this.FormatDescription(item.Description);
         this.RefreshIndex();
-        this.RecalculateDescriptionPosition();
+    }
+    RemoveItem(item) {
+        for (let i = 0; i < this.MenuItems.length; i++) {
+            if (this.MenuItems[i] === item) {
+                this.MenuItems.splice(i, 1);
+            }
+        }
+        this.RefreshIndex();
     }
     RefreshIndex() {
         if (this.MenuItems.length == 0) {
@@ -168,22 +248,29 @@ export default class NativeUI {
         this._activeItem = 1000 - (1000 % this.MenuItems.length);
         this._maxItem = this.MaxItemsOnScreen;
         this._minItem = 0;
+        if (this._visible) {
+            this.UpdateDescriptionCaption();
+        }
     }
     Clear() {
         this.MenuItems = [];
         this.RecalculateDescriptionPosition();
     }
     Open() {
-        Common.PlaySound(this.AUDIO_BACK, this.AUDIO_LIBRARY);
         this.Visible = true;
-        this._justOpened = true;
-        this.MenuOpen.emit();
     }
-    Close() {
-        Common.PlaySound(this.AUDIO_BACK, this.AUDIO_LIBRARY);
-        this.Visible = false;
+    CleanUp(closeChildren = false) {
+        if (closeChildren) {
+            this.Children.forEach(m => {
+                m.Close(true);
+            });
+        }
         this.RefreshIndex();
-        this.MenuClose.emit();
+    }
+    Close(closeChildren = false) {
+        this.Visible = false;
+        this.CleanUp(closeChildren);
+        this.MenuClose.emit(true);
     }
     set Subtitle(text) {
         this.subtitle = text;
@@ -191,7 +278,9 @@ export default class NativeUI {
     }
     GoLeft() {
         if (!(this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem))
+            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) &&
+            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) ||
+            !this.MenuItems[this.CurrentSelection].Enabled)
             return;
         if (this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) {
             const it = this.MenuItems[this.CurrentSelection];
@@ -200,6 +289,17 @@ export default class NativeUI {
             it.Index--;
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
             this.ListChange.emit(it, it.Index);
+        }
+        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) {
+            const it = this.MenuItems[this.CurrentSelection];
+            if (it.SelectedValue <= it.LowerThreshold) {
+                it.SelectedValue = it.UpperThreshold;
+            }
+            else {
+                it.SelectedValue -= it.LeftMoveThreshold;
+            }
+            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
+            this.DynamicListChange.emit(it, it.SelectedValue);
         }
         else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) {
             const it = this.MenuItems[this.CurrentSelection];
@@ -210,7 +310,9 @@ export default class NativeUI {
     }
     GoRight() {
         if (!(this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem))
+            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) &&
+            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) ||
+            !this.MenuItems[this.CurrentSelection].Enabled)
             return;
         if (this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) {
             const it = this.MenuItems[this.CurrentSelection];
@@ -219,6 +321,17 @@ export default class NativeUI {
             it.Index++;
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
             this.ListChange.emit(it, it.Index);
+        }
+        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) {
+            const it = this.MenuItems[this.CurrentSelection];
+            if (it.SelectedValue >= it.UpperThreshold) {
+                it.SelectedValue = it.LowerThreshold;
+            }
+            else {
+                it.SelectedValue += it.RightMoveThreshold;
+            }
+            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
+            this.DynamicListChange.emit(it, it.SelectedValue);
         }
         else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) {
             const it = this.MenuItems[this.CurrentSelection];
@@ -245,52 +358,27 @@ export default class NativeUI {
                 const subMenu = this.Children.get(it.Id);
                 this.Visible = false;
                 subMenu.Visible = true;
-                subMenu._justOpened = true;
-                subMenu.MenuOpen.emit();
                 this.MenuChange.emit(subMenu, true);
             }
         }
         it.fireEvent();
     }
-    getMousePosition(relative = false) {
-        const screenw = Screen.width;
-        const screenh = Screen.height;
-        const cursor = alt.getCursorPos();
-        let [mouseX, mouseY] = [cursor.x, cursor.y];
-        if (relative)
-            [mouseX, mouseY] = [cursor.x / screenw, cursor.y / screenh];
-        return [mouseX, mouseY];
-    }
-    GetScreenResolutionMantainRatio() {
-        const screenw = Screen.width;
-        const screenh = Screen.height;
-        const height = 1080.0;
-        const ratio = screenw / screenh;
-        var width = height * ratio;
-        return new Size(width, height);
-    }
-    IsMouseInBounds(topLeft, boxSize) {
-        const res = this.GetScreenResolutionMantainRatio();
-        const [mouseX, mouseY] = this.getMousePosition();
-        return (mouseX >= topLeft.X &&
-            mouseX <= topLeft.X + boxSize.Width &&
-            (mouseY > topLeft.Y && mouseY < topLeft.Y + boxSize.Height));
-    }
-    IsMouseInListItemArrows(item, topLeft, safezone) {
-        game.beginTextCommandWidth("jamyfafi");
+    IsMouseInListItemArrows(item, topLeft, safezone // TODO: Ability to scroll left and right
+    ) {
+        game.beginTextCommandGetWidth("jamyfafi");
         game.addTextComponentSubstringPlayerName(item.Text);
-        var res = this.GetScreenResolutionMantainRatio();
-        var screenw = res.Width;
-        var screenh = res.Height;
+        let res = Screen.ResolutionMaintainRatio();
+        let screenw = res.Width;
+        let screenh = res.Height;
         const height = 1080.0;
         const ratio = screenw / screenh;
-        var width = height * ratio;
+        let width = height * ratio;
         const labelSize = game.endTextCommandGetWidth(false) * width * 0.35;
         const labelSizeX = 5 + labelSize + 10;
         const arrowSizeX = 431 - labelSizeX;
-        return this.IsMouseInBounds(topLeft, new Size(labelSizeX, 38))
+        return Screen.IsMouseInBounds(topLeft, new Size(labelSizeX, 38))
             ? 1
-            : this.IsMouseInBounds(new Point(topLeft.X + labelSizeX, topLeft.Y), new Size(arrowSizeX, 38))
+            : Screen.IsMouseInBounds(new Point(topLeft.X + labelSizeX, topLeft.Y), new Size(arrowSizeX, 38))
                 ? 2
                 : 0;
     }
@@ -302,49 +390,51 @@ export default class NativeUI {
             this.MenuItems.filter(i => i.Hovered).forEach(i => (i.Hovered = false));
             return;
         }
-        if (!this.gui_cursor_visible) {
-            alt.showCursor(true);
-            this.gui_cursor_visible = true;
-        }
+        alt.showCursor(true);
         let limit = this.MenuItems.length - 1;
         let counter = 0;
         if (this.MenuItems.length > this.MaxItemsOnScreen + 1)
             limit = this._maxItem;
-        if (this.IsMouseInBounds(new Point(0, 0), new Size(30, 1080)) &&
+        if (Screen.IsMouseInBounds(new Point(0, 0), new Size(30, 1080)) &&
             this.MouseEdgeEnabled) {
             game.setGameplayCamRelativeHeading(game.getGameplayCamRelativeHeading() + 5.0);
-            game.setCursorSprite(6);
+            game.setMouseCursorSprite(6);
         }
-        else if (this.IsMouseInBounds(new Point(this.GetScreenResolutionMantainRatio().Width - 30.0, 0), new Size(30, 1080)) &&
+        else if (Screen.IsMouseInBounds(new Point(Screen.ResolutionMaintainRatio().Width - 30.0, 0), new Size(30, 1080)) &&
             this.MouseEdgeEnabled) {
             game.setGameplayCamRelativeHeading(game.getGameplayCamRelativeHeading() - 5.0);
-            game.setCursorSprite(7);
+            game.setMouseCursorSprite(7);
         }
         else if (this.MouseEdgeEnabled) {
-            game.setCursorSprite(1);
+            game.setMouseCursorSprite(1);
         }
         for (let i = this._minItem; i <= limit; i++) {
             let xpos = this.offset.X;
             let ypos = this.offset.Y + 144 - 37 + this.extraOffset + counter * 38;
+            let yposSelected = this.offset.Y + 144 - 37 + this.extraOffset + this.safezoneOffset.Y + this.CurrentSelection * 38;
             let xsize = 431 + this.WidthOffset;
             const ysize = 38;
             const uiMenuItem = this.MenuItems[i];
-            if (this.IsMouseInBounds(new Point(xpos, ypos), new Size(xsize, ysize))) {
+            if (Screen.IsMouseInBounds(new Point(xpos, ypos), new Size(xsize, ysize))) {
                 uiMenuItem.Hovered = true;
+                const res = this.IsMouseInListItemArrows(this.MenuItems[i], new Point(xpos, ypos), 0);
+                if (uiMenuItem.Hovered && res == 1 && (this.MenuItems[i] instanceof UIMenuListItem || this.MenuItems[i] instanceof UIMenuDynamicListItem)) {
+                    game.setMouseCursorSprite(5);
+                }
                 if (game.isControlJustPressed(0, 24) ||
                     game.isDisabledControlJustPressed(0, 24))
                     if (uiMenuItem.Selected && uiMenuItem.Enabled) {
-                        if (this.MenuItems[i] instanceof UIMenuListItem &&
+                        if ((this.MenuItems[i] instanceof UIMenuListItem || this.MenuItems[i] instanceof UIMenuDynamicListItem) &&
                             this.IsMouseInListItemArrows(this.MenuItems[i], new Point(xpos, ypos), 0) > 0) {
-                            const res = this.IsMouseInListItemArrows(this.MenuItems[i], new Point(xpos, ypos), 0);
                             switch (res) {
                                 case 1:
                                     Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
+                                    //this.MenuItems[i].ItemActivate(this);
                                     this.MenuItems[i].fireEvent();
                                     this.ItemSelect.emit(this.MenuItems[i], i);
                                     break;
                                 case 2:
-                                    var it = this.MenuItems[i];
+                                    let it = this.MenuItems[i];
                                     if ((it.Collection == null
                                         ? it.Items.Count
                                         : it.Collection.Count) > 0) {
@@ -361,8 +451,9 @@ export default class NativeUI {
                     else if (!uiMenuItem.Selected) {
                         this.CurrentSelection = i;
                         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-                        this.IndexChange.emit(this.CurrentSelection);
+                        this.IndexChange.emit(this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length]);
                         this.SelectItem();
+                        this.UpdateDescriptionCaption();
                     }
                     else if (!uiMenuItem.Enabled && uiMenuItem.Selected) {
                         Common.PlaySound(this.AUDIO_ERROR, this.AUDIO_LIBRARY);
@@ -381,7 +472,7 @@ export default class NativeUI {
         const extraX = this.safezoneOffset.X + this.offset.X;
         if (this.MenuItems.length <= this.MaxItemsOnScreen + 1)
             return;
-        if (this.IsMouseInBounds(new Point(extraX, extraY), new Size(431 + this.WidthOffset, 18))) {
+        if (Screen.IsMouseInBounds(new Point(extraX, extraY), new Size(431 + this.WidthOffset, 18))) {
             this._extraRectangleUp.color = new Color(30, 30, 30, 255);
             if (game.isControlJustPressed(0, 24) ||
                 game.isDisabledControlJustPressed(0, 24)) {
@@ -393,7 +484,7 @@ export default class NativeUI {
         }
         else
             this._extraRectangleUp.color = new Color(0, 0, 0, 200);
-        if (this.IsMouseInBounds(new Point(extraX, extraY + 18), new Size(431 + this.WidthOffset, 18))) {
+        if (Screen.IsMouseInBounds(new Point(extraX, extraY + 18), new Size(431 + this.WidthOffset, 18))) {
             this._extraRectangleDown.color = new Color(30, 30, 30, 255);
             if (game.isControlJustPressed(0, 24) ||
                 game.isDisabledControlJustPressed(0, 24)) {
@@ -414,12 +505,15 @@ export default class NativeUI {
             return;
         }
         if (game.isControlJustReleased(0, 177)) {
+            // Back
             this.GoBack();
         }
         if (this.MenuItems.length == 0)
             return;
         if (game.isControlPressed(0, 172) &&
             this.lastUpDownNavigation + 120 < Date.now()) {
+            // isControlJustPressed
+            // Up
             this.lastUpDownNavigation = Date.now();
             if (this.MenuItems.length > this.MaxItemsOnScreen + 1)
                 this.GoUpOverflow();
@@ -431,6 +525,8 @@ export default class NativeUI {
         }
         else if (game.isControlPressed(0, 173) &&
             this.lastUpDownNavigation + 120 < Date.now()) {
+            // isControlJustPressed
+            // Down
             this.lastUpDownNavigation = Date.now();
             if (this.MenuItems.length > this.MaxItemsOnScreen + 1)
                 this.GoDownOverflow();
@@ -442,6 +538,7 @@ export default class NativeUI {
         }
         else if (game.isControlPressed(0, 174) &&
             this.lastLeftRightNavigation + 100 < Date.now()) {
+            // Left
             this.lastLeftRightNavigation = Date.now();
             this.GoLeft();
         }
@@ -450,6 +547,7 @@ export default class NativeUI {
         }
         else if (game.isControlPressed(0, 175) &&
             this.lastLeftRightNavigation + 100 < Date.now()) {
+            // Right
             this.lastLeftRightNavigation = Date.now();
             this.GoRight();
         }
@@ -457,29 +555,9 @@ export default class NativeUI {
             this.lastLeftRightNavigation = 0;
         }
         else if (game.isControlJustPressed(0, 201)) {
+            // Select
             this.SelectItem();
         }
-    }
-    FormatDescription(input) {
-        if (input.length > 99)
-            input = input.slice(0, 99);
-        const maxPixelsPerLine = 425 + this.WidthOffset;
-        let aggregatePixels = 0;
-        let output = "";
-        const words = input.split(" ");
-        for (const word of words) {
-			const offset = StringMeasurer.MeasureString(word);
-            aggregatePixels += offset;
-            if (aggregatePixels > maxPixelsPerLine) {
-                output += "\n" + word + " ";
-                aggregatePixels = offset + StringMeasurer.MeasureString(" ");
-            }
-            else {
-                output += word + " ";
-                aggregatePixels += StringMeasurer.MeasureString(" ");
-            }
-        }
-        return output;
     }
     GoUpOverflow() {
         if (this.MenuItems.length <= this.MaxItemsOnScreen + 1)
@@ -507,7 +585,8 @@ export default class NativeUI {
             this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         }
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit(this.CurrentSelection);
+        this.IndexChange.emit(this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length]);
+        this.UpdateDescriptionCaption();
     }
     GoUp() {
         if (this.MenuItems.length > this.MaxItemsOnScreen + 1)
@@ -516,7 +595,8 @@ export default class NativeUI {
         this._activeItem--;
         this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit(this.CurrentSelection);
+        this.IndexChange.emit(this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length]);
+        this.UpdateDescriptionCaption();
     }
     GoDownOverflow() {
         if (this.MenuItems.length <= this.MaxItemsOnScreen + 1)
@@ -544,7 +624,8 @@ export default class NativeUI {
             this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         }
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit(this.CurrentSelection);
+        this.IndexChange.emit(this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length]);
+        this.UpdateDescriptionCaption();
     }
     GoDown() {
         if (this.MenuItems.length > this.MaxItemsOnScreen + 1)
@@ -553,23 +634,30 @@ export default class NativeUI {
         this._activeItem++;
         this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit(this.CurrentSelection);
+        this.IndexChange.emit(this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length]);
+        this.UpdateDescriptionCaption();
     }
     GoBack() {
-        Common.PlaySound(this.AUDIO_BACK, this.AUDIO_LIBRARY);
         this.Visible = false;
         if (this.ParentMenu != null) {
             this.ParentMenu.Visible = true;
-            this.ParentMenu._justOpened = true;
-            this.ParentMenu.MenuOpen.emit();
             this.MenuChange.emit(this.ParentMenu, false);
         }
-        this.MenuClose.emit();
+        else {
+            this.CleanUp(true);
+        }
+        this.MenuClose.emit(false);
     }
     BindMenuToItem(menuToBind, itemToBindTo) {
+        if (!this.MenuItems.includes(itemToBindTo)) {
+            this.AddItem(itemToBindTo);
+        }
         menuToBind.ParentMenu = this;
         menuToBind.ParentItem = itemToBindTo;
         this.Children.set(itemToBindTo.Id, menuToBind);
+    }
+    AddSubMenu(subMenu, itemToBindTo) {
+        this.BindMenuToItem(subMenu, itemToBindTo);
     }
     ReleaseMenuFromItem(releaseFrom) {
         if (!this.Children.has(releaseFrom.Id))
@@ -580,10 +668,29 @@ export default class NativeUI {
         this.Children.delete(releaseFrom.Id);
         return true;
     }
+    UpdateDescriptionCaption() {
+        if (this.MenuItems.length) {
+            this._descriptionText.caption = this.MenuItems[this._activeItem % this.MenuItems.length].Description;
+            this._descriptionText.Wrap = 400;
+            this.recalculateDescriptionNextFrame++;
+        }
+    }
+    CalculateDescription() {
+        if (this.recalculateDescriptionNextFrame > 0) {
+            this.recalculateDescriptionNextFrame--;
+        }
+        this.RecalculateDescriptionPosition();
+        if (this.MenuItems.length > 0 && this._descriptionText.caption && this.MenuItems[this._activeItem % this.MenuItems.length].Description.trim() !== "") {
+            const numLines = Screen.GetLineCount(this._descriptionText.caption, this._descriptionText.pos, this._descriptionText.font, this._descriptionText.scale, this._descriptionText.Wrap);
+            this._descriptionRectangle.size = new Size(431 + this.WidthOffset, (numLines * 25) + 15);
+            if (numLines === 0) {
+                this.recalculateDescriptionNextFrame++;
+            }
+        }
+    }
     render() {
         if (!this.Visible)
-			return;
-
+            return;
         if (this._justOpened) {
             if (this._logo != null && !this._logo.IsTextureDictionaryLoaded)
                 this._logo.LoadTextureDictionary();
@@ -593,6 +700,8 @@ export default class NativeUI {
                 this._descriptionRectangle.LoadTextureDictionary();
             if (!this._upAndDownSprite.IsTextureDictionaryLoaded)
                 this._upAndDownSprite.LoadTextureDictionary();
+            if (!this.recalculateDescriptionNextFrame)
+                this.recalculateDescriptionNextFrame++;
         }
         this._mainMenu.Draw();
         this.ProcessMouse();
@@ -602,21 +711,19 @@ export default class NativeUI {
                 ? new Size(431 + this.WidthOffset, 38 * (this.MaxItemsOnScreen + 1))
                 : new Size(431 + this.WidthOffset, 38 * this.MenuItems.length);
         this._background.Draw();
+        if (this.recalculateDescriptionNextFrame) {
+            this.CalculateDescription();
+        }
         if (this.MenuItems.length > 0) {
             this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
             if (this.MenuItems[this._activeItem % this.MenuItems.length].Description.trim() !== "") {
-                this.RecalculateDescriptionPosition();
-                let descCaption = this.MenuItems[this._activeItem % this.MenuItems.length].Description;
-                this._descriptionText.caption = descCaption;
-                const numLines = this._descriptionText.caption.split("\n").length;
-                this._descriptionRectangle.size = new Size(431 + this.WidthOffset, numLines * 25 + 15);
                 this._descriptionBar.Draw();
                 this._descriptionRectangle.Draw();
                 this._descriptionText.Draw();
             }
         }
+        let count = 0;
         if (this.MenuItems.length <= this.MaxItemsOnScreen + 1) {
-            let count = 0;
             for (const item of this.MenuItems) {
                 item.SetVerticalPosition(count * 38 - 37 + this.extraOffset);
                 item.Draw();
@@ -628,9 +735,8 @@ export default class NativeUI {
             }
         }
         else {
-            let count = 0;
             for (let index = this._minItem; index <= this._maxItem; index++) {
-                var item = this.MenuItems[index];
+                let item = this.MenuItems[index];
                 item.SetVerticalPosition(count * 38 - 37 + this.extraOffset);
                 item.Draw();
                 count++;
@@ -660,4 +766,4 @@ export default class NativeUI {
         this._logo.Draw();
     }
 }
-export { NativeUI as Menu, UIMenuItem, UIMenuListItem, UIMenuCheckboxItem, UIMenuSliderItem, BadgeStyle, Point, Size, Color, Font, ItemsCollection, ListItem };
+export { NativeUI as Menu, UIMenuItem, UIMenuListItem, UIMenuDynamicListItem, UIMenuCheckboxItem, UIMenuSliderItem, BadgeStyle, Font, Alignment, Point, Size, Color, ItemsCollection, ListItem };
